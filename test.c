@@ -7,13 +7,6 @@ float tab2[100];        // bu dizi icinde ekipman satin almak için harcanan par
 float tab3[100];       // bu dizi icinde  calisan sayisi
 float tab4[100];       //bu dizi icinde  şirketin karlari
 
-// bu diziler tab1[100]   tab2[100]  tab3[100]  tab4[100]  copyalanacak
-float tab1_copy[100];
-float tab2_copy[100];
-float tab3_copy[100];
-float tab4_copy[100];
-
-
 float *tab6;        //tab1 70% deger alacak      
 float *tab7;       //tab2 70% deger alacak        
 float *tab8;       //tab3 70% deger alacak   
@@ -25,6 +18,7 @@ float *tab10;        // en yuksek korelation x deger alacak
 int i1=0,i2=0,i3=0,i4=0,tahmin_cmp, j;
 
 
+int *indices;                  //bu dizi incileri alacak
 float *tahmin_deger;
 float *testVeriX;
 float *testVeriY;
@@ -114,7 +108,7 @@ float korelation(float tab[],float tab5[],int n){
 
     return (product1-product2)/product3;
 }
-void percent_deger1(int percent){                                         //bu function tab1,tab2,tab3,tab4 %70 degerler alacak
+/*void percent_deger1(int percent){                                         //bu function tab1,tab2,tab3,tab4 %70 degerler alacak
     int say;
     cmp=(i1*percent)/100;
     // once tab1 ,tab2, tab3,tab4 copyasi alacak
@@ -147,38 +141,24 @@ void percent_deger1(int percent){                                         //bu f
             j++;
         }
     }
-}
+}*/
 void percent_deger(int percent) {                                         //bu function tab1,tab2,tab3,tab4 %70 degerler alacak
     cmp = (i1 * percent) / 100;
-
-    // Copie des tableaux d'origine
-    for (int i = 0; i < 100; i++) {
-        tab1_copy[i] = tab1[i];
-        tab2_copy[i] = tab2[i];
-        tab3_copy[i] = tab3[i];
-        tab4_copy[i] = tab4[i];
-    }
-
     // Créer et mélanger les indices
-    int indices[100];
+    indices=(int *)malloc(sizeof(int)*100);
     for (int i = 0; i < 100; i++) {
         indices[i] = i;
     }
 
-    srand(time(NULL));
+    srand(time(NULL));    
+    //dizi icinde 0 100 arasinda sayi rasgele ekleniyor                          
     for (int i = 99; i > 0; i--) {
         int j = rand() % (i + 1);
         int temp = indices[i];
         indices[i] = indices[j];
         indices[j] = temp;
     }
-    for (int i = 0; i < 100; i++)
-    {
-        printf("%d ",indices[i]);
-    }
-     printf("\n\n");
 
-   
    // Allouer et remplir les tableaux aléatoires
     tab6 = (float *)malloc(sizeof(float) * cmp);
     tab7 = (float *)malloc(sizeof(float) * cmp);
@@ -187,30 +167,11 @@ void percent_deger(int percent) {                                         //bu f
 
     for (int i = 0; i < cmp; i++) {
         int say = indices[i];
-        /*tab6[i] = tab1[say];
+        tab6[i] = tab1[say];
         tab7[i] = tab2[say];
         tab8[i] = tab3[say];
-        tab9[i] = tab4[say];*/
-
-        tab6[i]=tab1_copy[say];
-        tab1_copy[say]=-1;
-        tab7[i]=tab2_copy[say];
-        tab2_copy[say]=-1;
-        tab8[i]=tab3_copy[say];
-        tab3_copy[say]=-1;
-        tab9[i]=tab4_copy[say];
-        tab4_copy[say]=-1;
+        tab9[i] = tab4[say];
     }
-    for (int i = 0; i < cmp; i++)
-    {
-        printf("%.2f, ",tab8[i]);
-    }
-     printf("\n\n");
-    for (int i = 0; i < 100; i++)
-    {
-        printf("%.2f, ",tab3_copy[i]);
-    }
-     printf("\n\n");
 }
 
 
@@ -254,11 +215,9 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
     */
     testVeriX=(float *)malloc(sizeof(float)*30);
     testVeriY=(float *)malloc(sizeof(float)*30);
-    testVericmpx=0;
-    testVericmpy=0;
     float max;
 
-    tab10=(float *)malloc(sizeof(float)*n);               // en buyuk korelation x degeri 
+    tab10=(float *)malloc(sizeof(float)*n);                     // en buyuk korelation x degeri 
     max=r1;
     for (int l = 0; l < n; l++)
     {
@@ -271,21 +230,20 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         {
             tab10[l]=Tab2[l];
         }
-        printf("En buyuk korelasyona sahip degisken x2 ekipman satin almak icin harcanan para o zaman Regresyon denklem onda bulalim\n");
-        printf("---------------------------------------------------------------------------------------\n");
-        reference=2;
-        for (int  i = 0; i < 100; i++)
+        testVericmpx=0;
+        testVericmpy=0;
+        //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        for (int  i = cmp; i < 100; i++)
         {
-            
-            if (tab2_copy[i]!=-1)
-           {
-                testVeriX[testVericmpx]=tab2_copy[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab4_copy[i];
-                testVericmpy++;
-           }
+           int say=indices[i];
+           testVeriX[testVericmpx]=tab2[say];
+           testVeriY[testVericmpy]=tab4[say];
+           testVericmpx++;
+           testVericmpy++;
             
         }
+        printf("En buyuk korelasyona sahip degisken x2 ekipman satin almak icin harcanan para o zaman Regresyon denklem onda bulalim\n");
+        printf("---------------------------------------------------------------------------------------\n");
     }
     if (r3>max)
     {
@@ -294,39 +252,37 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         {
             tab10[l]=Tab3[l];
         }
-        printf("En buyuk korelasyona sahip degisken x3 calisan sayisi o zaman Regresyon denklem onda bulalim\n");
-        printf("---------------------------------------------------------------------------------------\n");
-        reference=3;
-        for (int  i = 0; i < 100; i++)
+        testVericmpx=0;
+        testVericmpy=0;
+        //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        for (int  i = cmp; i < 100; i++)
         {
-            
-            if (tab3_copy[i]!=-1)
-           {
-                testVeriX[testVericmpx]=tab3_copy[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab4_copy[i];
-                testVericmpy++;
-           }
+           int say=indices[i];
+           testVeriX[testVericmpx]=tab3[say];     
+           testVeriY[testVericmpy]=tab4[say];
+           testVericmpx++;
+           testVericmpy++;
             
         }
+        printf("En buyuk korelasyona sahip degisken x3 calisan sayisi o zaman Regresyon denklem onda bulalim\n");
+        printf("---------------------------------------------------------------------------------------\n");
     }
     if(max==r1)
     {
-        printf("En buyuk korelasyona sahip degisken x1 yatirim yapmak icin para o zaman Regresyon denklem onda bulalim\n");
-        printf("---------------------------------------------------------------------------------------\n");
-        reference=1;
-        for (int  i = 0; i < 100; i++)
+        testVericmpx=0;
+        testVericmpy=0;
+        //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        for (int  i = cmp; i < 100; i++)
         {
-            
-            if (tab1_copy[i]!=-1)
-           {
-                testVeriX[testVericmpx]=tab1_copy[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab4_copy[i];
-                testVericmpy++;
-           }
+           int say=indices[i];
+           testVeriX[testVericmpx]=tab1[say];
+           testVeriY[testVericmpy]=tab4[say];
+           testVericmpx++;
+           testVericmpy++;
             
         }
+        printf("En buyuk korelasyona sahip degisken x1 yatirim yapmak icin para o zaman Regresyon denklem onda bulalim\n");
+        printf("---------------------------------------------------------------------------------------\n");
     }
     
     // 𝒚 =𝒂+𝒃x  bu denklem olusturmaya calisalim
@@ -372,110 +328,6 @@ float sse_bul(float Tab1[],float Tab2[],int n){
     return sum_karee;
 }
 
-void testVeri_tahmindeger(){
-    testVeriX=(float *)malloc(sizeof(float)*30);
-    testVeriY=(float *)malloc(sizeof(float)*30);
-    testVeritahmin_deger=(float *)malloc(sizeof(float)*30);
-    testVericmpx=0;
-    testVericmpy=0;
-    testVeritahmin_cmp=0;
-    float epsilon = 0.00001;
-
-    if (reference==1)
-    {
-        for (int  i = 0; i < i1; i++)
-        {
-            int repere=0;
-            for (int j = 0; j < cmp; j++)
-            {
-                printf("%f ---------",tab10[j]);
-                printf("%f \n",tab1[i]);
-                if (tab10[j]==tab1[i])
-                {
-                    repere=1;
-                    break;
-                } 
-            }
-            if (repere==0)
-           {
-                testVeriX[testVericmpx]=tab1[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab9[i];
-                testVericmpy++;
-           }
-            
-        }
-        
-    }
-    if (reference==2)
-    {
-        for (int  i = 0; i < i1; i++)
-        {
-            int repere=0;
-            for (int j = 0; j < cmp; j++)
-            {
-                printf("%f ---------",tab10[j]);
-                printf("%f \n",tab2[i]);
-
-                if (tab10[j]==tab2[i])
-                {
-                    repere=1;
-                    break;
-                } 
-            }
-            if (repere==0)
-           {
-                testVeriX[testVericmpx]=tab2[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab9[i];
-                testVericmpy++;
-           }
-            
-        }
-        
-    }
-
-    if (reference==3)
-    {
-        for (int  i = 0; i < i1; i++)
-        {
-            int repere=0;
-            for (int j = 0; j < cmp; j++)
-            {
-                printf("%f ---------",tab10[j]);
-                printf("%f \n",tab3[i]);
-                if (fabs(tab10[j] - tab3[i]) < epsilon) 
-                {
-                    repere=1;
-                    break;
-                } 
-            }
-            if (repere==0)
-           {
-                testVeriX[testVericmpx]=tab3[i];
-                testVericmpx++;
-                testVeriY[testVericmpy]=tab9[i];
-                testVericmpy++;
-           }
-            
-        }
-        
-    }
-
-    //printf("%d",testVericmpy);
-    /*for (int i = 0; i < testVericmpx; i++)
-    {
-        printf("%f ",testVeriX[i]);
-    }
-    for (int i = 0; i < testVericmpy; i++)
-    {
-        printf("%f ",testVeriY[i]);
-    }*/
-
-
-}
-
-
 
 int main(){
     verioku();
@@ -498,60 +350,27 @@ int main(){
     printf("Calisan sayisi ile kazanilan miktar arasindaki korelasyon katsayisini hesaplayalim  r3 = korelasyon(x3, y)\n");
     printf("r3 = korelasyon(x3, y)= %f\n",r3);
     printf("\n\n");
-    /*denklem_olustur(tab6,tab7,tab8,tab9,cmp);
+    denklem_olustur(tab6,tab7,tab8,tab9,cmp);
     printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
     printf("Tahmin degeri :\n");
     tahmin_deger_bul(tab10,tab9,cmp);
     printf("\n\n");
     printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
-    printf("SSE degeri budur : %f\n",sse_bul(tab9,tahmin_deger,cmp));*/
-    //testVeri_tahmindeger();
-
-
-
-    /*//////printf("%d\n",testVericmpx);
+    printf("SSE degeri budur : %f\n",sse_bul(tab9,tahmin_deger,cmp));
+    printf("%d\n",testVericmpx);
     printf("%d\n",testVericmpy);
-    printf("%d\n",cmp);
-    printf("%d\n",reference);
-    printf("%d\n",i1);
-
-    int nbr=0;
-    for (int i = 0; i < cmp; i++)
+    for (int l = 0; l < testVericmpx; l++)
     {
-        if (tab3_copy[i]>0)
-        {
-            nbr++;
-        }
-        
-        printf("%.2f\n",tab3_copy[i]);
+        printf("%.2f\n",testVeriX[l]);
     }
-    printf("%d\n",nbr);
-    printf("%d\n",j);
-    /*
     printf("\n\n");
-    for (int i = 0; i < cmp; i++)
+    for (int l = 0; l < testVericmpy; l++)
     {
-        printf("%f ",tab9[i]);
+        printf("%.2f\n",testVeriY[l]);
     }
-     printf("\n\n");
-    for (int i = 0; i < i1; i++)
-    {
-        printf("%f ",tab1[i]);
-    }*/
-
-
+    
     
 
-
-
-
-    /*printf("correlation= %f\n",korelation(tab1,tab4,i1));
-    printf("correlation= %f\n",korelation(tab2,tab4,i1));
-    printf("correlation= %f\n",korelation(tab3,tab4,i1));*/
-
-
-
-    
     /*for (int l = 0; l < i1; l++)
     {
         printf("%.2f ",tab1[l]);
@@ -594,17 +413,5 @@ int main(){
     }
     printf("La valeur de SSE  de :%f\n",sse_bul(lin4,tahmin_deger,8));*/
     
-    float dizi[]={1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, 13.00, 10.00, -1.00, 9.00, -1.00, 5.00, -1.00, 8.00, -1.00, -1.00, 11.00, 8.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, 15.00, -1.00, -1.00, 11.00, -1.00, -1.00, -1.00, 6.00, -1.00, 12.00, -1.00, -1.00, 10.00, 8.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, 8.00, -1.00, -1.00, -1.00, 11.00, 10.00, 19.00, 5.00, 10.00, -1.00, -1.00, -1.00, 11.00, -1.00, -1.00, -1.00, -1.00, -1.00, -1.00, 9.00, 16.00, -1.00, -1.00, 18.00, 16.00, -1.00, 10.00, 15.00, -1.00, -1.00, 18.00, -1.00, 13.00, -1.00, -1.00, -1.00, -1.00, -1.00, 13.00, 9.00};
-    int nbr=0;
-    for (int i = 0; i < 100; i++)
-    {
-        if (tab3_copy[i]>0)
-        {
-            nbr++;
-        }
-        
-        printf("%.2f\n",tab3_copy[i]);
-    }
-     printf("%d\n",nbr);
 
 }

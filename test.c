@@ -18,15 +18,16 @@ float *tab10;        // en yuksek korelation x deger alacak
 int i1=0,i2=0,i3=0,i4=0,tahmin_cmp, j;
 
 
-int *indices;                  //bu dizi incileri alacak
-float *tahmin_deger;
-float *testVeriX;
-float *testVeriY;
+int *indices;                  //bu dizi incileri alacak  
+float *testVeriX;               //bu dizi x test veri alacak 
+float *testVeriY;               //bu dizi y test veri alacak 
 int   testVericmpx;
 int   testVericmpy;
-float *testVeritahmin_deger;
-int   testVeritahmin_cmp;
-int reference=0;
+
+float *tahmin_deger;                  //egitim veriler tahmin deger alacak
+
+float b;                            //b katsayi
+float a;                            //a katsayi
 /*
     x1=tab6
     x2=tab7
@@ -85,10 +86,10 @@ float korelation(float tab[],float tab5[],int n){
     
     float tab_ortalama=aritmetik_ortalama(tab,n);
     float tab5_ortalama=aritmetik_ortalama(tab5,n);
-    float product1=0;                             //bu değişkende xi ve yi'nin çarpımının toplamı var (somme du prooduit xi*yi)
-    float product2;                                //Bu değişken, iki ortalamanın çarpımının değerlerin n çarpımını içerir  (produit de n*ortax*ortay)
-    float x_kare_som=0;                              // toplam x karesi bulunur  ( la somme des x*x)
-    float y_kare_som=0;                                //toplam y karesi bulunur  (la somme des y*y)
+    float product1=0;                                                  //bu değişkende xi ve yi'nin çarpımının toplamı var (somme du prooduit xi*yi)
+    float product2;                                                   //Bu değişken, iki ortalamanın çarpımının değerlerin n çarpımını içerir  (produit de n*ortax*ortay)
+    float x_kare_som=0;                                              // toplam x karesi bulunur  ( la somme des x*x)
+    float y_kare_som=0;                                             //toplam y karesi bulunur  (la somme des y*y)
     double product3;
 
     for (int i = 0; i < n; i++)
@@ -213,17 +214,17 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
     /*
         Tab1 x1 icin   Tab2 x2 icin    Tab3 x3 icin  Tab4 y icin    
     */
-    testVeriX=(float *)malloc(sizeof(float)*30);
-    testVeriY=(float *)malloc(sizeof(float)*30);
+    testVeriX=(float *)malloc(sizeof(float)*30);                                //dizi yer olustur
+    testVeriY=(float *)malloc(sizeof(float)*30);                                 //dizi yer olustur
     float max;
 
-    tab10=(float *)malloc(sizeof(float)*n);                     // en buyuk korelation x degeri 
+    tab10=(float *)malloc(sizeof(float)*n);                     // en buyuk korelation x degerleri alack bu dizi
     max=r1;
     for (int l = 0; l < n; l++)
     {
         tab10[l]=Tab1[l];
     }
-    if (r2>max)
+    if (r2>r1 && r2>r3)
     {
         max=r2;
         for (int l = 0; l < n; l++)
@@ -232,7 +233,8 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         }
         testVericmpx=0;
         testVericmpy=0;
-        //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        //ici on copie les donnes restant (100-cmp) dans le tableau testverix   
+        //en büyük korelasyona sahip x ve y değerlerini test tablosuna kopyalıyoruz
         for (int  i = cmp; i < 100; i++)
         {
            int say=indices[i];
@@ -245,7 +247,7 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         printf("En buyuk korelasyona sahip degisken x2 ekipman satin almak icin harcanan para o zaman Regresyon denklem onda bulalim\n");
         printf("---------------------------------------------------------------------------------------\n");
     }
-    if (r3>max)
+    if (r3>r1 && r3>r2)
     {
         max=r3;
         for (int l = 0; l < n; l++)
@@ -255,6 +257,7 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         testVericmpx=0;
         testVericmpy=0;
         //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        //en büyük korelasyona sahip x ve y değerlerini test tablosuna kopyalıyoruz
         for (int  i = cmp; i < 100; i++)
         {
            int say=indices[i];
@@ -272,6 +275,7 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         testVericmpx=0;
         testVericmpy=0;
         //ici on copie les donnes restant (100-cmp) dans le tableau testverix 
+        //en büyük korelasyona sahip x ve y değerlerini test tablosuna kopyalıyoruz
         for (int  i = cmp; i < 100; i++)
         {
            int say=indices[i];
@@ -290,8 +294,8 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
     
     //b degeri bulacak
     // tab10 x icin    tab9 y icin
-    float b=b_degeri_bul(tab10,Tab4,n);
-    float a=a_degeri_bul(tab10,Tab4,n);
+    b=b_degeri_bul(tab10,Tab4,n);
+    a=a_degeri_bul(tab10,Tab4,n);
     printf("Denklemin farkli katsayilari a=%f  b=%f\n",a,b);
     printf("---------------------------------------------------------------------------------------\n");
     if (b>0)
@@ -302,7 +306,7 @@ void denklem_olustur(float Tab1[],float Tab2[],float Tab3[],float Tab4[],int n){
         printf("Regresion denklem Y=%.3f %.3fx\n",a,b);
 }
 
-void tahmin_deger_bul(float Tab1[],float Tab2[] ,int n){
+/*void tahmin_deger_bul1(float Tab1[],float Tab2[] ,int n){
     //Tab 1 x icin Tab2 y icin 
     tahmin_deger=(float *)malloc(sizeof(float)*n); 
     tahmin_cmp=0;
@@ -316,8 +320,22 @@ void tahmin_deger_bul(float Tab1[],float Tab2[] ,int n){
        tahmin_cmp++;
        printf("%.4f  ",y);
     }
-}
+}*/
 
+float* tahmin_deger_bul(float Tab1[],float Tab2[] ,int n){
+    //Tab 1 x icin Tab2 y icin 
+    float *Tab3;
+    Tab3=(float *)malloc(sizeof(float)*n); 
+    tahmin_cmp=0;
+    float y;
+    for (int i = 0; i < n; i++)
+    {
+       y=a+(Tab1[i]*b);
+       Tab3[tahmin_cmp]=y;
+       tahmin_cmp++;
+    }
+    return Tab3;
+}
 float sse_bul(float Tab1[],float Tab2[],int n){
     //Tab 1 y icin Tab2 tahmin deger icin 
     float sum_karee=0;                     //y ve tahmin deger'nin kare farkının toplamı
@@ -326,6 +344,21 @@ float sse_bul(float Tab1[],float Tab2[],int n){
         sum_karee+=((Tab1[i]-Tab2[i])*(Tab1[i]-Tab2[i]));
     }
     return sum_karee;
+}
+
+void veri_dosya(char *nom ,float table1[],float table2[],float table3[],int n){    //bu fonsyon olusturdugumuz tahmin veriler dosyada koyuruz
+    FILE *f= fopen(nom, "w");
+    if (f== NULL) {
+        printf("Erreur d'ouverture du fichier.\n");
+        return;
+    }
+    fprintf(f,"X degeri   Y degeri   Tahmin deger\n");
+    for (int i = 0; i < n; i++)
+    {
+       fprintf(f,"%.2f    %.2f     %.2f\n",table1[i],table2[i],table3[i]);
+    }
+    fprintf(f,"------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    fclose(f);
 }
 
 
@@ -339,9 +372,7 @@ int main(){
     // Ekipman satın almak için harcanan miktar ile kazanılan miktar arasındaki korelasyon katsayısını hesaplayalım  r2 = korelasyon(x2, y)
     r2=korelation(tab7,tab9,cmp); 
     //Çalışan sayısı ile kazanılan miktar arasındaki korelasyon katsayısını hesaplayalım  r3 = korelasyon(x3, y)
-    r3=korelation(tab8,tab9,cmp); 
-
-
+    r3=korelation(tab8,tab9,cmp);
 
     printf("Yatirim tutari ile kazanilan tutar arasindaki korelasyon katsayisini hesaplayalim  r1 = korelasyon(x1, y)\n");
     printf("r1 = korelasyon(x1, y)= %f\n",r1);
@@ -352,12 +383,51 @@ int main(){
     printf("\n\n");
     denklem_olustur(tab6,tab7,tab8,tab9,cmp);
     printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    printf("Tahmin degerleri egitim veri seti icin  olusturacak\n");                // egitim veriler icin
+    tahmin_deger=(float *)malloc(sizeof(float)*cmp);
+    tahmin_deger=tahmin_deger_bul(tab10,tab9,cmp);
     printf("Tahmin degeri :\n");
-    tahmin_deger_bul(tab10,tab9,cmp);
+    for (int l = 0; l < cmp; l++)
+    {
+        printf("%.4f  ",tahmin_deger[l]);
+    }
+
     printf("\n\n");
     printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    printf("SSE degeri egitim veri seti icin  bulacak\n");     
     printf("SSE degeri budur : %f\n",sse_bul(tab9,tahmin_deger,cmp));
-    printf("%d\n",testVericmpx);
+    //Egimtim_sonuc.txt dosyasi egitim veri sonuclar kaydedelim
+    veri_dosya("Egimtim_sonuc.txt",tab10,tab9,tahmin_deger,cmp);
+
+
+
+
+
+    printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    printf("Test verileri icin tahmini y degerlerini hesaplayiniz\n");
+    float *testVeritahmin_deger;
+    testVeritahmin_deger=(float *)malloc(sizeof(float)*cmp);
+    testVeritahmin_deger=tahmin_deger_bul(testVeriX,testVeriY,testVericmpx);
+    printf("Tahmin degeri :\n");
+    for (int l = 0; l < testVericmpx; l++)
+    {
+        printf("%.4f  ",testVeritahmin_deger[l]);
+    }
+
+    printf("\n\n");
+    printf("------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    printf("SSE degeri test veri seti icin  bulacak\n");     
+    printf("SSE degeri budur : %f\n",sse_bul(testVeriY,testVeritahmin_deger,testVericmpx));
+    //Egimtim_sonuc.txt dosyasi egitim veri sonuclar kaydedelim
+    veri_dosya("Test_sonuc.txt",testVeriX,testVeriY,testVeritahmin_deger,testVericmpx);
+
+
+
+
+
+
+    
+    /*printf("%d\n",testVericmpx);
     printf("%d\n",testVericmpy);
     for (int l = 0; l < testVericmpx; l++)
     {
@@ -367,7 +437,7 @@ int main(){
     for (int l = 0; l < testVericmpy; l++)
     {
         printf("%.2f\n",testVeriY[l]);
-    }
+    }*/
     
     
 
